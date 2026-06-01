@@ -1,0 +1,17 @@
+{
+  "name": "mern-chat-app",
+  "version": "1.0.0",
+  "description": "This chat Application with single and group Application",
+  "license": "ISC",
+  "author": "Priti Maurya",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon backend/server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.6.3"
+  }
+}
