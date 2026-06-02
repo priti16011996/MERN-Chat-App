@@ -1,22 +1,24 @@
+const dotenv = require("dotenv");
+dotenv.config();
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 5001;
-const {chats} = require('./data')
-const dotenv = require('dotenv');
-dotenv.config();
-app.get("/",(req,res)=>{
-    res.send("Backend setup properly");
-})
-app.get("/api/v1/chat",(req,res)=>{
-    res.send(chats);
-})
+const { chats } = require("./data");
+const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const connectDB = require("./config/db");
+const userRoutes = require("./routes/userRoutes");
+app.use(express.json());
+connectDB();
 
-app.get("/api/v1/chat/:id",(req,res)=>{
-   let {id} = req.params;
-   let userChat = chats.find((chat)=>chat._id == id)
-   res.send(userChat)
-})
+app.get("/", (req, res) => {
+  res.send("Backend setup properly");
+});
 
-app.listen(PORT,()=>{
-    console.log(`Server is runing on PORT ${PORT}`);
-})
+app.use("/api/user", userRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+app.listen(PORT, () => {
+  console.log(`Server is runing on PORT ${PORT}`);
+});
