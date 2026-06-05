@@ -39,7 +39,7 @@ const accessChat = asyncHandler(async (req, res) => {
     }
   }
 });
-
+// fetch all type of chat
 const fetchChats = asyncHandler(async (req, res) => {
   try {
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
