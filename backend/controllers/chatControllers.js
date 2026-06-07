@@ -32,7 +32,11 @@ const accessChat = asyncHandler(async (req, res) => {
     };
     try {
       const createdChat = await Chat.create(chatData);
-      const FullChat = await Chat.findOne({ _id: createdChat.id });
+      const FullChat = await Chat.findOne({ _id: createdChat._id }).populate(
+        "users",
+        "-password",
+      );
+      res.status(200).send(FullChat);
     } catch (error) {
       res.status(400);
       throw new Error(error.message);
@@ -90,7 +94,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
   }
 });
 
-const renameGroup = asyncHandler(async (req, re) => {
+const renameGroup = asyncHandler(async (req, res) => {
   const { chatId, chatName } = req.body;
   const updatedChat = await Chat.findByIdAndUpdate(
     chatId,
@@ -107,7 +111,7 @@ const renameGroup = asyncHandler(async (req, re) => {
     res.status(404);
     throw new Error("Chat Not Found");
   } else {
-    res.json(updateChat);
+    res.json(updatedChat);
   }
 });
 
@@ -145,7 +149,7 @@ const removeFromGroup = asyncHandler(async (req, res) => {
     res.status(404);
     throw new Error("Chat is removed");
   } else {
-    res.json(added);
+    res.json(removed);
   }
 });
 
