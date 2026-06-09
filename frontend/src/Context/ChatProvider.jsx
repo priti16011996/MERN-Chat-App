@@ -1,5 +1,5 @@
 import {
-  Children,
+  children,
   createContext,
   useContext,
   useEffect,
@@ -8,7 +8,7 @@ import {
 import { useHistory } from "react-router";
 const ChatContext = createContext();
 
-const ChatProvider = ({ Children }) => {
+const ChatProvider = ({ children }) => {
   const [user, setUser] = useState();
 
   const history = useHistory();
@@ -21,7 +21,7 @@ const ChatProvider = ({ Children }) => {
   }, [history]);
   return (
     <ChatContext.Provider value={{ user, setUser }}>
-      {Children}
+      {children}
     </ChatContext.Provider>
   );
 };
