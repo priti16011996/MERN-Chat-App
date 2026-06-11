@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { Box, Text, Button, Menu } from "@chakra-ui/react";
 import { FaBell, FaChevronDown, FaSearch } from "react-icons/fa";
 import { ChatState } from "../../Context/ChatProvider";
-import ProfileModel from "./ProfileModel"
+import ProfileModel from "./ProfileModel";
+import { useHistory } from "react-router-dom";
+
 
 function SideDrawer() {
     const { user } = ChatState();
@@ -11,6 +13,11 @@ function SideDrawer() {
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
     const [loadingChat, setLoadingChat] = useState(false);
+    const history = useHistory();
+    const logoutHandler = () => {
+        localStorage.removeItem("userInfo");
+        history.push("/");
+    };
 
     return (
         <Box
@@ -75,7 +82,7 @@ function SideDrawer() {
                                 <ProfileModel />
                             </Menu.Item>
 
-                            <Menu.Item value="logout">
+                            <Menu.Item value="logout" onClick={logoutHandler}>
                                 Logout
                             </Menu.Item>
                         </Menu.Content>
