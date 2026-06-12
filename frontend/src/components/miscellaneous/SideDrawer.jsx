@@ -8,7 +8,6 @@ import { useHistory } from "react-router-dom";
 
 function SideDrawer() {
     const { user } = ChatState();
-
     const [search, setSearch] = useState("");
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -78,7 +77,7 @@ function SideDrawer() {
 
                     <Menu.Positioner>
                         <Menu.Content>
-                            <Menu.Item value="profile" asChild>
+                            <Menu.Item value="profile" user={user} asChild>
                                 <ProfileModel />
                             </Menu.Item>
 
