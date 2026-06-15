@@ -1,13 +1,16 @@
 import React, { useState } from "react";
-import { Box, Text, Button, Menu } from "@chakra-ui/react";
+import { CloseButton, Drawer, Portal, Spinner } from "@chakra-ui/react"
+import { Box, Text, Button, Menu, Input } from "@chakra-ui/react";
 import { FaBell, FaChevronDown, FaSearch } from "react-icons/fa";
 import { ChatState } from "../../Context/ChatProvider";
 import ProfileModel from "./ProfileModel";
 import { useHistory } from "react-router-dom";
-
-
+import { toaster } from "../ui/toaster";
+import ChatLoading from "./ChatLoading";
+import UserListItem from "./UserListItem";
+import axios from "axios";
 function SideDrawer() {
-    const { user } = ChatState();
+    const { user, setSelectedChat, chats, setChats } = ChatState();
     const [search, setSearch] = useState("");
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -17,6 +20,67 @@ function SideDrawer() {
         localStorage.removeItem("userInfo");
         history.push("/");
     };
+
+    const handleSearch = async () => {
+        if (!search) {
+            toaster.create({
+                title: "Please Enter the Valid Value for Search",
+                type: "warning",
+                closable: true,
+                duration: 5000,
+                placement: "top-start"
+            });
+            return;
+        }
+        try {
+            setLoading(true);
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+            const { data } = await axios.get(`/api/user?search=${search}`, config);
+            if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+            setLoading(false);
+            setSearchResult(data);
+        } catch (error) {
+            toaster.create({
+                title: "Error occured!",
+                description: "Failed to load the search result",
+                type: "error",
+                closable: true,
+                duration: 5000,
+                placement: "top-end"
+            });
+            setLoading(false);
+            return;
+        }
+    }
+
+    const accessChat = async (userId) => {
+        try {
+            setLoading(true);
+            const config = {
+                headers: {
+                    "Content-type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+            const { data } = await axios.post("/api/chat", { userId }, config);
+            setSelectedChat(data);
+            setLoadingChat(false);
+        }
+        catch (error) {
+            toaster.create({
+                title: "Error while fetching Chat",
+                description: "error.message",
+                type: "error",
+                closable: true,
+                duration: 5000,
+                placement: "bottom-end"
+            });
+        }
+    }
 
     return (
         <Box
@@ -28,10 +92,54 @@ function SideDrawer() {
             p="10px"
             borderBottom="1px solid"
         >
-            <Button variant="ghost">
-                <FaSearch />
-                <Text ml={2}>Search User</Text>
-            </Button>
+            <Drawer.Root placement="start">
+                <Drawer.Trigger asChild>
+                    <Button variant="ghost">
+                        <FaSearch />
+                        <Text ml={2}>Search User</Text>
+                    </Button>
+                </Drawer.Trigger>
+
+                <Portal>
+                    <Drawer.Backdrop />
+                    <Drawer.Positioner>
+                        <Drawer.Content>
+                            <Drawer.Header>
+                                <Drawer.Title>Search Users</Drawer.Title>
+                            </Drawer.Header>
+
+                            <Drawer.Body>
+                                <Box display="flex" gap={2} pb={2}>
+                                    <Input
+                                        placeholder="Search by name or email"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
+
+                                    <Button colorScheme="blue" onClick={handleSearch}>
+                                        Go
+                                    </Button>
+                                </Box>
+                                {loading ? (
+                                    <ChatLoading />
+                                ) : (
+                                    searchResult?.map((user) => (
+                                        <UserListItem
+                                            key={user._id}
+                                            user={user}
+                                            handleFunction={() => accessChat(user._id)}
+                                        />
+                                    ))
+                                )}
+                                {loadingChat && <Spinner ml="auto" display="flex" />}
+                            </Drawer.Body>
+                            <Drawer.CloseTrigger asChild>
+                                <CloseButton size="sm" />
+                            </Drawer.CloseTrigger>
+                        </Drawer.Content>
+                    </Drawer.Positioner>
+                </Portal>
+            </Drawer.Root>
 
             <Text fontSize="2xl" fontWeight="bold">
                 Talk-A-Tive
@@ -89,6 +197,7 @@ function SideDrawer() {
                 </Menu.Root>
             </Box>
         </Box>
+
     );
 }
 
