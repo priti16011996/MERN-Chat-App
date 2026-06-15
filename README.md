@@ -302,7 +302,7 @@ npm run dev
 
 ## 🌍 Live Demo
 
-Add your deployed application URL here:
+Project is in devlopment phase so URL is not available 
 
 ```text
 https://your-chat-app-url.com

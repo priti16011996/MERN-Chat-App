@@ -37,8 +37,8 @@ function Signup() {
             const data = new FormData();
             data.append("file", Image);
             data.append("upload_preset", "CHAT-APP");
-            data.append("cloud_name", process.env.cloud_name);
-            fetch("https://api.cloudinary.com/v1_1/process.env.cloud_name/image/upload", {
+            data.append("cloud_name", "dva9r5e2p");
+            fetch("https://api.cloudinary.com/v1_1/dva9r5e2p/image/upload", {
                 method: "post",
                 body: data,
             })
