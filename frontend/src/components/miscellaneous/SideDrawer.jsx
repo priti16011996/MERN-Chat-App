@@ -7,9 +7,10 @@ import ProfileModel from "./ProfileModel";
 import { useHistory } from "react-router-dom";
 import { toaster } from "../ui/toaster";
 import ChatLoading from "./ChatLoading";
-import UserListItem from "./UserListItem";
+import UserListItem from "../userAvtar/UserListItem";
 import axios from "axios";
 function SideDrawer() {
+    const [open, setOpen] = useState(false);
     const { user, setSelectedChat, chats, setChats } = ChatState();
     const [search, setSearch] = useState("");
     const [searchResult, setSearchResult] = useState([]);
@@ -40,7 +41,7 @@ function SideDrawer() {
                 },
             };
             const { data } = await axios.get(`/api/user?search=${search}`, config);
-            if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+            //if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -59,7 +60,7 @@ function SideDrawer() {
 
     const accessChat = async (userId) => {
         try {
-            setLoading(true);
+            setLoadingChat(true);
             const config = {
                 headers: {
                     "Content-type": "application/json",
@@ -67,13 +68,15 @@ function SideDrawer() {
                 },
             };
             const { data } = await axios.post("/api/chat", { userId }, config);
+            if (!chats?.find((c) => c._id === data._id)) setChats([data, ...chats]);
             setSelectedChat(data);
             setLoadingChat(false);
+            setOpen(false);
         }
         catch (error) {
             toaster.create({
                 title: "Error while fetching Chat",
-                description: "error.message",
+                description: error.message,
                 type: "error",
                 closable: true,
                 duration: 5000,
@@ -92,7 +95,11 @@ function SideDrawer() {
             p="10px"
             borderBottom="1px solid"
         >
-            <Drawer.Root placement="start">
+            <Drawer.Root
+                placement="start"
+                open={open}
+                onOpenChange={(e) => setOpen(e.open)}
+            >
                 <Drawer.Trigger asChild>
                     <Button variant="ghost">
                         <FaSearch />
