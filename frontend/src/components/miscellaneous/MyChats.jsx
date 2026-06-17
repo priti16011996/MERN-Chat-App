@@ -6,6 +6,7 @@ import { Box, Button, Stack, Text } from '@chakra-ui/react';
 import ChatLoading from './ChatLoading';
 import { getSender } from '../config/chatLogics';
 import { FaPlus } from "react-icons/fa";
+import GroupChatModel from './GroupChatModel';
 
 function MyChats() {
     const [loggedUser, setLoggedUser] = useState();
@@ -55,12 +56,14 @@ function MyChats() {
                 justifyContent="space-between"
                 alignItems="center">
                 My Chats
-                <Button
-                    display="flex"
-                    fontSize={{ base: "17px", md: "10px", lg: "17px" }}
-                >
-                    New Group Chat <FaPlus style={{ marginLeft: "8px" }} />
-                </Button>
+                <GroupChatModel>
+                    <Button
+                        display="flex"
+                        fontSize={{ base: "17px", md: "10px", lg: "17px" }}
+                    >
+                        New Group Chat <FaPlus style={{ marginLeft: "8px" }} />
+                    </Button>
+                </GroupChatModel>
             </Box>
             <Box
                 display="flex"
@@ -83,8 +86,9 @@ function MyChats() {
                                 px={3}
                                 py={2}
                                 borderRadius="lg"
-                                key={chat._id}
+                                key={chat._id} data-chat={chat}
                             >
+
                                 <Text>
                                     {!chat.isGroupChat
                                         ? getSender(loggedUser, chat.users)

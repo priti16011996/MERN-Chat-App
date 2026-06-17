@@ -41,7 +41,7 @@ function SideDrawer() {
                 },
             };
             const { data } = await axios.get(`/api/user?search=${search}`, config);
-            if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
+            //if (!chats.find((c) => c._id === data._id)) setChats([data, ...chats]);
             setLoading(false);
             setSearchResult(data);
         } catch (error) {
@@ -68,7 +68,6 @@ function SideDrawer() {
                 },
             };
             const { data } = await axios.post("/api/chat", { userId }, config);
-            console.log(data);
             if (!chats?.find((c) => c._id === data._id)) setChats([data, ...chats]);
             setSelectedChat(data);
             setLoadingChat(false);
