@@ -8,7 +8,7 @@ import { getSender } from '../config/chatLogics';
 import { FaPlus } from "react-icons/fa";
 import GroupChatModel from './GroupChatModel';
 
-function MyChats() {
+function MyChats({ fetchAgain }) {
     const [loggedUser, setLoggedUser] = useState();
     const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
     const fetchChats = async () => {
@@ -35,7 +35,7 @@ function MyChats() {
     }
     useEffect(() => {
         setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
-        fetchChats();
+        fetchChats(fetchAgain);
     }, [])
     return (
         <Box display={{ base: selectedChat ? "none" : "flex", md: "flex" }}

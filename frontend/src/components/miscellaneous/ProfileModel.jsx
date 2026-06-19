@@ -19,7 +19,10 @@ function ProfileModel({ user, children }) {
                         {children}
                     </span>
                 ) : (
-                    <IconButton aria-label="View Profile">
+                    <IconButton
+                        aria-label="View Profile"
+                        variant="ghost"
+                    >
                         <FaEye />
                     </IconButton>
                 )}

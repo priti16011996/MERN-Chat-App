@@ -15,6 +15,7 @@ import UserListItem from "../userAvtar/UserListItem";
 import UserBadgeItem from "../userAvtar/UserBadgeItem";
 
 const GroupChatModals = ({ children }) => {
+    const [open, setOpen] = useState(false);
     const [groupChatName, setGroupChatName] = useState("");
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [search, setSearch] = useState("");
@@ -47,6 +48,13 @@ const GroupChatModals = ({ children }) => {
                 config
             );
             setChats([data, ...chats]);
+            setGroupChatName("");
+            setSelectedUsers([]);
+            setSearch("");
+            setSearchResult([]);
+
+            // Close modal
+            setOpen(false);
             toaster.create({
                 title: "New Group Chat Created!",
                 type: "success",
@@ -122,11 +130,16 @@ const GroupChatModals = ({ children }) => {
 
     return (
         <Dialog.Root
+            open={open}
+            onOpenChange={(e) => setOpen(e.open)}
+            placement="center"
             placement="center"
             motionPreset="slide-in-bottom"
         >
             <Dialog.Trigger asChild>
-                <span>{children}</span>
+                <span onClick={() => setOpen(true)}>
+                    {children}
+                </span>
             </Dialog.Trigger>
 
             <Portal>
