@@ -9,7 +9,7 @@ import { FaEye } from "react-icons/fa";
 
 function SingleChat({ fetchAgain, setFetchAgain }) {
     const { user, selectedChat, setSelectedChat } = ChatState();
-    console.log("Selected Chat:", selectedChat);
+    console.log("setFetchAgain Chat:", setFetchAgain);
     return (
         <>
             {selectedChat ? (

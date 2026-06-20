@@ -96,6 +96,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
 const renameGroup = asyncHandler(async (req, res) => {
   const { chatId, chatName } = req.body;
+  console.log(chatId + " " + chatName);
   const updatedChat = await Chat.findByIdAndUpdate(
     chatId,
     {
@@ -107,6 +108,7 @@ const renameGroup = asyncHandler(async (req, res) => {
   )
     .populate("users", "-password")
     .populate("groupAdmin", "-password");
+  console.log(updatedChat);
   if (!updatedChat) {
     res.status(404);
     throw new Error("Chat Not Found");
