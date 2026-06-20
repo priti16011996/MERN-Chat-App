@@ -5,6 +5,7 @@ import SingleChat from './SingleChat';
 
 function ChatBox({ fetchAgain, setFetchAgain }) {
     const { selectedChat } = ChatState();
+    console.log("setFetchAgain Chat Box:", setFetchAgain);
     return (
         <Box
             display={{ base: selectedChat ? "flex" : "none", md: "flex" }}
