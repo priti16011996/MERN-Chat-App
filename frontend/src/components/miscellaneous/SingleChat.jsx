@@ -1,90 +1,128 @@
-import React, { useEffect, useState } from 'react'
-import { ChatState } from '../../Context/ChatProvider'
-import { Box, IconButton, Spinner, Text, Field, Input } from '@chakra-ui/react';
+import React, { useEffect, useState } from "react";
+import { ChatState } from "../../Context/ChatProvider";
+import {
+    Box,
+    IconButton,
+    Spinner,
+    Text,
+    Field,
+    Input,
+} from "@chakra-ui/react";
 import { ArrowLeft } from "lucide-react";
-import { getSender, getSenderFull } from '../config/chatLogics';
-import ProfileModel from './ProfileModel';
-import UpdateGroupChatModal from './UpdateGroupChatModal';
 import { FaEye } from "react-icons/fa";
-import { toaster } from "../ui/toaster";
 import axios from "axios";
+
+import { getSender, getSenderFull } from "../config/chatLogics";
+import ProfileModel from "./ProfileModel";
+import UpdateGroupChatModal from "./UpdateGroupChatModal";
+import ScrollableChat from "../ScrollableChat";
+import { toaster } from "../ui/toaster";
+import io from 'socket.io-client';
+const ENDPOINT = "http://localhost:5001";
+var socket, selectedChatCompare;
 
 function SingleChat({ fetchAgain, setFetchAgain }) {
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState("");
+    const [socketConnected, setSocketConnected] = useState(false);
 
     const { user, selectedChat, setSelectedChat } = ChatState();
-    //console.log("setFetchAgain Chat:", setFetchAgain);
+
     const fetchMessages = async () => {
         if (!selectedChat) return;
+
         try {
+            setLoading(true);
+
             const config = {
                 headers: {
                     Authorization: `Bearer ${user.token}`,
-                }
+                },
             };
-            setLoading(true);
+
             const { data } = await axios.get(
                 `/api/message/${selectedChat._id}`,
                 config
             );
-            console.log(data);
+
             setMessages(data);
             setLoading(false);
+
+            socket.emit("join chat", selectedChat._id);
         } catch (error) {
-            console.log(error);
+            setLoading(false);
+
             toaster.create({
-                title: "Error Occured",
-                description: error.response?.data?.message || "Failed to fetch messages",
+                title: "Error Occurred",
+                description:
+                    error.response?.data?.message || "Failed to fetch messages",
                 type: "error",
                 closable: true,
-                duration: 5000,
             });
         }
     };
     useEffect(() => {
+        socket = io(ENDPOINT);
+        socket.emit("setup", user);
+        socket.on("connection", () => setSocketConnected(true));
+    }, []);
+    useEffect(() => {
         fetchMessages();
-    }, [selectedChat])
-    const sendMessage = async (event) => {
-        if (event.key == "Enter" && newMessage) {
-            try {
-                const config = {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${user.token}`,
-                    },
-                };
+        selectedChatCompare = selectedChat;
+    }, [selectedChat]);
 
-                setNewMessage("");
-                const { data } = await axios.post(
-                    "/api/message",
-                    {
-                        content: newMessage,
-                        chatId: selectedChat._id,
-                    },
-                    config
-                );
-                console.log(data);
-                setMessages([...messages, data]);
-
-            } catch (error) {
-                console.log(error);
-                toaster.create({
-                    title: "Error Occured",
-                    description: error.response?.data?.message || "Failed to send the Messages",
-                    type: "error",
-                    closable: true,
-                    duration: 5000,
-                });
+    useEffect(() => {
+        socket.on("message recieved", (newMessageRecieved) => {
+            if (!selectedChatCompare || selectedChatCompare._id !== newMessageRecieved.chat._id) {
+                //Give Notification
+            } else {
+                setMessages([...messages, newMessageRecieved]);
             }
+        })
+    })
+
+    const sendMessage = async (e) => {
+        if (e.key !== "Enter" || !newMessage.trim()) return;
+
+        try {
+            const config = {
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const messageToSend = newMessage;
+            setNewMessage("");
+
+            const { data } = await axios.post(
+                "/api/message",
+                {
+                    content: messageToSend,
+                    chatId: selectedChat._id,
+                },
+                config
+            );
+            socket.emit("new message", data);
+            setMessages((prev) => [...prev, data]);
+        } catch (error) {
+            toaster.create({
+                title: "Error Occurred",
+                description:
+                    error.response?.data?.message || "Failed to send message",
+                type: "error",
+                closable: true,
+            });
         }
     };
 
-    const typingHandler = (event) => {
-        setNewMessage(event.target.value);
-        //Typing Indicator logic 
-    }
+
+
+    const typingHandler = (e) => {
+        setNewMessage(e.target.value);
+    };
+
     return (
         <>
             {selectedChat ? (
@@ -107,16 +145,22 @@ function SingleChat({ fetchAgain, setFetchAgain }) {
                         >
                             <ArrowLeft />
                         </IconButton>
+
                         {!selectedChat.isGroupChat ? (
                             <>
                                 {getSender(user, selectedChat.users)}
-                                <ProfileModel user={getSenderFull(user, selectedChat.users)} />
+                                <ProfileModel
+                                    user={getSenderFull(user, selectedChat.users)}
+                                />
                             </>
                         ) : (
-                            <>{selectedChat.chatName.toUpperCase()}
+                            <>
+                                {selectedChat.chatName.toUpperCase()}
+
                                 <UpdateGroupChatModal
                                     fetchAgain={fetchAgain}
                                     setFetchAgain={setFetchAgain}
+                                    fetchMessages={fetchMessages}
                                 >
                                     <IconButton
                                         aria-label="Update Group"
@@ -128,46 +172,64 @@ function SingleChat({ fetchAgain, setFetchAgain }) {
                             </>
                         )}
                     </Text>
+
                     <Box
                         display="flex"
-                        flexDir="column"
-                        justifyContent="flex-end"
-                        p={3}
+                        flexDirection="column"
                         bg="#E8E8E8"
                         w="100%"
                         h="100%"
                         borderRadius="lg"
-                        overflowY="hidden"
+                        p={3}
+                        overflow="hidden"
                     >
                         {loading ? (
-                            <Spinner size="xl"
-                                w={20}
-                                h={20}
+                            <Spinner
+                                size="xl"
                                 alignSelf="center"
-                                margin="auto" />
+                                margin="auto"
+                            />
                         ) : (
-                            <div> {/*Messages */} </div>
+                            <Box
+                                flex="1"
+                                overflowY="auto"
+                                mb={3}
+                                px={1}
+                            >
+                                <ScrollableChat messages={messages} />
+                            </Box>
                         )}
-                        <Field.Root onKeyDown={sendMessage} required mt={3}>
+
+                        <Field.Root required>
                             <Input
                                 variant="filled"
                                 bg="#E0E0E0"
-                                placeholder='Enter a message...'
+                                placeholder="Enter a message..."
                                 value={newMessage}
                                 onChange={typingHandler}
+                                onKeyDown={sendMessage}
                             />
                         </Field.Root>
                     </Box>
                 </>
             ) : (
-                <Box display="flex" alignItems="center" justifyContent="center" h="100%">
-                    <Text fontSize="3xl" pb={3} fontFamily="Work sans">
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    h="100%"
+                >
+                    <Text
+                        fontSize="3xl"
+                        pb={3}
+                        fontFamily="Work Sans"
+                    >
                         Click on a user to start chatting
                     </Text>
                 </Box>
             )}
         </>
-    )
+    );
 }
 
-export default SingleChat
+export default SingleChat;
